@@ -770,15 +770,6 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     }
 
     @Override
-    public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-      if (BuildConfig.DEBUG && mignoreSslErrors) {
-        handler.proceed();
-      }
-
-      super.onReceivedSslError(view, handler, error);
-    }
-
-    @Override
     public void onPageFinished(WebView webView, String url) {
       super.onPageFinished(webView, url);
 
@@ -827,46 +818,51 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
 
     @Override
     public void onReceivedSslError(final WebView webView, final SslErrorHandler handler, final SslError error) {
-        handler.cancel();
+		if (BuildConfig.DEBUG && mignoreSslErrors) {
+			handler.proceed();
+		}
+		else {
+			handler.cancel();
 
-        int code = error.getPrimaryError();
-        String failingUrl = error.getUrl();
-        String description = "";
-        String descriptionPrefix = "SSL error: ";
+			int code = error.getPrimaryError();
+			String failingUrl = error.getUrl();
+			String description = "";
+			String descriptionPrefix = "SSL error: ";
 
-        // https://developer.android.com/reference/android/net/http/SslError.html
-        switch (code) {
-          case SslError.SSL_DATE_INVALID:
-            description = "The date of the certificate is invalid";
-            break;
-          case SslError.SSL_EXPIRED:
-            description = "The certificate has expired";
-            break;
-          case SslError.SSL_IDMISMATCH:
-            description = "Hostname mismatch";
-            break;
-          case SslError.SSL_INVALID:
-            description = "A generic error occurred";
-            break;
-          case SslError.SSL_NOTYETVALID:
-            description = "The certificate is not yet valid";
-            break;
-          case SslError.SSL_UNTRUSTED:
-            description = "The certificate authority is not trusted";
-            break;
-          default:
-            description = "Unknown SSL Error";
-            break;
-        }
+			// https://developer.android.com/reference/android/net/http/SslError.html
+			switch (code) {
+			  case SslError.SSL_DATE_INVALID:
+				description = "The date of the certificate is invalid";
+				break;
+			  case SslError.SSL_EXPIRED:
+				description = "The certificate has expired";
+				break;
+			  case SslError.SSL_IDMISMATCH:
+				description = "Hostname mismatch";
+				break;
+			  case SslError.SSL_INVALID:
+				description = "A generic error occurred";
+				break;
+			  case SslError.SSL_NOTYETVALID:
+				description = "The certificate is not yet valid";
+				break;
+			  case SslError.SSL_UNTRUSTED:
+				description = "The certificate authority is not trusted";
+				break;
+			  default:
+				description = "Unknown SSL Error";
+				break;
+			}
 
-        description = descriptionPrefix + description;
+			description = descriptionPrefix + description;
 
-        this.onReceivedError(
-          webView,
-          code,
-          description,
-          failingUrl
-        );
+			this.onReceivedError(
+			  webView,
+			  code,
+			  description,
+			  failingUrl
+			);
+		}
     }
 
     @Override
